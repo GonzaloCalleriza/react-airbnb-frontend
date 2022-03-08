@@ -1,18 +1,49 @@
-import { sanityClient } from '../sanity';
+import { urlFor } from "../sanity"
+import sanityClient from "../sanityClient"
+import Link from "next/link"
+import { isMultiple } from "../utils"
+import DashboardMap from "../components/DashboardMap"
 
-export default function Home({ properties }) {
+const Home = ({ properties }) => {
+  console.log(properties)
   return (
-    <div>
-
-    </div>
+    <>
+      {properties && (
+        <div className="main">
+          <div className="feed-container">
+            <h1>Places to stay near you</h1>
+            <div className="feed">
+              {properties.map((property) => (
+                <Link href={`property/${property.slug.current}`} key={property.id}>
+                  <div key={property._id} className="card">
+                    <img src={urlFor(property.mainImage)} />
+                    <p>
+                      {property.reviews.length} review
+                      {isMultiple(property.reviews.length)}
+                    </p>
+                    <h3>{property.title}</h3>
+                    <h3>
+                      <b>£{property.pricePerNight}/per Night</b>
+                    </h3>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+          <div className="map">
+            <DashboardMap properties={properties} />
+          </div>
+        </div>
+      )}
+    </>
   )
 }
 
 export const getServerSideProps = async () => {
-  const query = '*[ _type == "property" ]'
-  const properties = await sanityClient.fetch(query) 
+  const query = '*[ _type == "property"]'
+  const properties = await sanityClient.fetch(query)
 
-  if(!properties.length) {
+  if (!properties.length) {
     return {
       props: {
         properties: [],
@@ -21,8 +52,10 @@ export const getServerSideProps = async () => {
   } else {
     return {
       props: {
-        
-      }
+        properties,
+      },
     }
   }
 }
+
+export default Home
