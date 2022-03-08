@@ -1,101 +1,60 @@
-import Image from "../../components/Image"
-import { sanityClient } from "../../sanity"
-import { isMultiple } from "../../utils"
+import { sanityClient, urlFor } from "../sanity"
+import Link from "next/link"
+import { isMultiple } from "../utils"
+import DashboardMap from "../components/DashboardMap"
 
-
-const Property = ({ 
-        title,
-        location,
-        propertyType,
-        mainImage,
-        images,
-        pricePerNight,
-        beds,
-        bedrooms,
-        description,
-        host,
-        reviews
-}) => {
-
-    const reviewAmount = reviews.length
-
-    return(
-        <div className='container'>
-            <h1><b>{title}</b></h1>
-            <p>{reviewAmount} review{isMultiple(reviewAmount)}</p>
-            <div className='images-section'>
-                <Image identifier='main-image' image={mainImage} />
-                <div className='sub-images-section'>
-                    {images.map((_key, image) => (<Image identifier='image' image={image} key={_key}/>)) }
-                </div>    
+const Home = ({ properties }) => {
+  console.log(properties)
+  return (
+    <>
+      {properties && (
+        <div className="main">
+          <div className="feed-container">
+            <h1>Places to stay near you</h1>
+            <div className="feed">
+              {properties.map((property) => (
+                <Link href={`property/${property.slug.current}`} key={property.id}>
+                  <div key={property._id} className="card">
+                    <img src={urlFor(property.mainImage)} />
+                    <p>
+                      {property.reviews.length} review
+                      {isMultiple(property.reviews.length)}
+                    </p>
+                    <h3>{property.title}</h3>
+                    <h3>
+                      <b>£{property.pricePerNight}/per Night</b>
+                    </h3>
+                  </div>
+                </Link>
+              ))}
             </div>
-            <h2><b>{propertyType} hosted by {host?.name}</b></h2>
-            <h4>{bedrooms} bedroom{isMultiple(bedrooms)} * {beds} bed{isMultiple(beds)}</h4>
-
-            <div className='price-box'>
-                <h2>${pricePerNight}</h2>
-                <h4>{reviewAmount} review{isMultiple(reviewAmount)}</h4>
-                <dive className='button' onClick={() => {}}>Change Dates</dive>
-            </div>
+          </div>
+          <div className="map">
+            <DashboardMap properties={properties} />
+          </div>
         </div>
-    )
+      )}
+    </>
+  )
 }
 
-export const getServerSideProps = async (pageContext) => {
-    const pageSlug = pageContext.query.slug
+export const getServerSideProps = async () => {
+  const query = '*[ _type == "property"]'
+  const properties = await sanityClient.fetch(query)
 
-    const query = `*[ _type == "property" && slug.current == $pageSlug][0]{
-        title,
-        location,
-        propertyType,
-        mainImage,
-        images,
-        pricePerNight,
-        beds,
-        bedrooms,
-        description,
-        host->{
-            _id,
-            name,
-            slug,
-            image
-        },
-        reviews[]{
-            ...,
-            traveler->{
-                _id,
-                name,
-                slug,
-                image
-            }
-        }
-    }`
-
-    const property = await sanityClient.fetch(query, {pageSlug})
-
-    if(!property){
-        return{
-            props: null,
-            notFound: true,
-        }
-    } else {
-        return {
-            props: {
-                title: property.title,
-                location: property.location,
-                propertyType: property.propertyType,
-                mainImage: property.mainImage,
-                images: property.images,
-                pricePerNight: property.pricePerNight,
-                beds: property.beds,
-                bedrooms: property.bedrooms,
-                description: property.description,
-                host: property.host,
-                reviews: property.reviews,
-            }
-        }
+  if (!properties.length) {
+    return {
+      props: {
+        properties: [],
+      },
     }
+  } else {
+    return {
+      props: {
+        properties,
+      },
+    }
+  }
 }
 
-
-export default Property
+export default Home
