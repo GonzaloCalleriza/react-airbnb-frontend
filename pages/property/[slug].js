@@ -1,4 +1,7 @@
-export const property = ({ 
+import { sanityClient } from "../../sanity"
+import { isMultiple } from "../../utils"
+
+const Property = ({ 
         title,
         location,
         propertyType,
@@ -12,8 +15,20 @@ export const property = ({
         reviews
 }) => {
 
+    const reviewAmount = reviews.length
+
     return(
-        <h1>Title</h1>
+        <div className='container'>
+            <h1><b>{title}</b></h1>
+            <h2><b>{propertyType} hosted by {host?.name}</b></h2>
+            <h4>{bedrooms} bedroom{isMultiple(bedrooms)} * {beds} bed{isMultiple(beds)}</h4>
+
+            <div className='price-box'>
+                <h2>${pricePerNight}</h2>
+                <h4>{reviewAmount} review{isMultiple(reviewAmount)}</h4>
+                <dive className='button' onClick={() => {}}>Change Dates</dive>
+            </div>
+        </div>
     )
 }
 
@@ -47,7 +62,7 @@ export const getServerSideProps = async (pageContext) => {
         }
     }`
 
-    const property = await sanityClient.fetch(query, {pages})
+    const property = await sanityClient.fetch(query, {pageSlug})
 
     if(!property){
         return{
