@@ -8,7 +8,7 @@ export default function Home({ properties }) {
   )
 }
 
-export const getServerSideprops = async () => {
+export const getServerSideProps = async () => {
   const query = '*[ _type == "property" ]'
   const properties = await sanityClient.fetch(query) 
 
