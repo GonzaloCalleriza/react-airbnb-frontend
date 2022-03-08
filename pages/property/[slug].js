@@ -1,5 +1,7 @@
+import Image from "../../components/Image"
 import { sanityClient } from "../../sanity"
 import { isMultiple } from "../../utils"
+
 
 const Property = ({ 
         title,
@@ -20,6 +22,13 @@ const Property = ({
     return(
         <div className='container'>
             <h1><b>{title}</b></h1>
+            <p>{reviewAmount} review{isMultiple(reviewAmount)}</p>
+            <div className='images-section'>
+                <Image identifier='main-image' image={mainImage} />
+                <div className='sub-images-section'>
+                    {images.map((_key, image) => (<Image identifier='image' image={image} key={_key}/>)) }
+                </div>    
+            </div>
             <h2><b>{propertyType} hosted by {host?.name}</b></h2>
             <h4>{bedrooms} bedroom{isMultiple(bedrooms)} * {beds} bed{isMultiple(beds)}</h4>
 
